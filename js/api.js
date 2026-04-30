@@ -1,26 +1,35 @@
-let currentUser = null;
+// Change this to your live Render/Heroku URL when deploying
+const API_BASE_URL = "https://insightaiq-feomzie228-b8bfdn1b.leapcell.dev"; 
 
-async function checkAuthAndInitPage() {
-    // 1. Check if logged in
-    const response = await apiFetch('/auth/me');
-    if (!response) return; // apiFetch handles the 401 redirect
+async function apiFetch(endpoint, options = {}) {
+    const config = {
+        ...options,
+        credentials: "include", // MANDATORY: Sends HTTP-only cookies cross-domain
+        headers: {
+            'X-API-Version': '1',
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+    };
 
-    currentUser = response.data;
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+        
+        if (response.status === 401) {
+            window.location.href = "/index.html";
+            return null;
+        }
 
-    // 2. Populate Navigation Bar
-    document.getElementById('nav-username').innerText = currentUser.username;
-    document.getElementById('nav-avatar').src = currentUser.avatar_url || `https://ui-avatars.com/api/?name=${currentUser.username}`;
+        const data = await response.json();
 
-    // 3. Enforce UI Roles (Hide elements meant only for admins)
-    if (currentUser.role !== 'admin') {
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-    }
+        if (!response.ok) {
+            alert(data.message || "An error occurred");
+            return null;
+        }
 
-    // 4. Trigger page-specific data loading if the function exists
-    if (typeof loadPageData === "function") {
-        loadPageData();
+        return data;
+    } catch (error) {
+        console.error("API Fetch Error:", error);
+        return null;
     }
 }
-
-// Run immediately
-checkAuthAndInitPage();
