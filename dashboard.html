@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Insighta Labs+</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans leading-normal tracking-normal">
+    
+    <!-- NAVIGATION BAR -->
+    <nav class="bg-white border-b border-gray-200 fixed w-full z-30 top-0">
+        <div class="px-3 py-3 lg:px-5 lg:pl-3 flex items-center justify-between">
+            <a href="/dashboard.html" class="text-xl font-bold text-blue-600">Insighta Labs+</a>
+            <div class="flex items-center space-x-4">
+                <a href="/dashboard.html" class="text-gray-600 hover:text-blue-600">Dashboard</a>
+                <a href="/profiles.html" class="text-gray-600 hover:text-blue-600">Profiles</a>
+                <a href="/account.html" class="flex items-center text-sm font-medium text-gray-900 rounded-full hover:text-blue-600">
+                    <img id="nav-avatar" class="w-8 h-8 mr-2 rounded-full" src="" alt="user">
+                    <span id="nav-username">Loading...</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="pt-20 p-6 space-y-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">System Dashboard</h1>
+            <p class="text-sm text-gray-600">Real-time overview of the Profile Intelligence System.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <p class="text-sm font-medium text-gray-500">Total Profiles</p>
+                <p class="text-2xl font-semibold text-gray-900" id="stat-total">...</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <p class="text-sm font-medium text-gray-500">Gender Balance</p>
+                <p class="text-sm font-semibold text-gray-900" id="stat-gender">Loading...</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <p class="text-sm font-medium text-gray-500">Current Role</p>
+                <p class="text-2xl font-semibold text-gray-900 capitalize" id="stat-role">...</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 class="text-lg font-bold">Recently Added Profiles</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left" id="recent-table">
+                    <tbody class="divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- SCRIPTS -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        async function loadPageData() {
+            document.getElementById('stat-role').innerText = currentUser.role;
+
+            const data = await apiFetch('/api/profiles?limit=5&sort_by=created_at&order=desc');
+            if (!data) return;
+
+            document.getElementById('stat-total').innerText = data.total.toLocaleString();
+
+            const tbody = document.querySelector('#recent-table tbody');
+            tbody.innerHTML = data.data.map(p => `
+                <tr>
+                    <td class="p-4 font-medium">${p.name}</td>
+                    <td class="p-4 text-gray-600">${p.country_name}</td>
+                    <td class="p-4 text-gray-500 text-sm">${new Date(p.created_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+
+            const maleData = await apiFetch('/api/profiles?gender=male&limit=1');
+            const femaleData = await apiFetch('/api/profiles?gender=female&limit=1');
+            if (maleData && femaleData) {
+                document.getElementById('stat-gender').innerText = `${maleData.total} M / ${femaleData.total} F`;
+            }
+        }
+    </script>
+</body>
+</html>
