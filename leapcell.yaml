@@ -1,0 +1,5 @@
+# leapcell.yaml
+name: insighta-web-portal
+type: static
+static:
+  dir: . 
