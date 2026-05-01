@@ -39,7 +39,7 @@
                         <p id="acc-email" class="text-gray-500"></p>
                     </div>
 
-                    <div class="mt-8 border-t pt-6">
+                    <!-- <div class="mt-8 border-t pt-6">
                         <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">System Identity</h3>
                         <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                             <div>
@@ -47,7 +47,7 @@
                                 <dd id="acc-github" class="mt-1 text-sm text-gray-900 font-mono"></dd>
                             </div>
                         </dl>
-                    </div>
+                    </div> -->
 
                     <div class="mt-10 pt-6 border-t flex flex-col space-y-3">
                         <button onclick="handleLogout()" class="w-full py-2 px-4 border border-red-300 rounded-md text-red-700 bg-white hover:bg-red-50">
@@ -68,13 +68,16 @@
             document.getElementById('acc-role').innerText = currentUser.role;
             document.getElementById('acc-username').innerText = currentUser.username;
             document.getElementById('acc-email').innerText = currentUser.email || 'No email provided';
-            document.getElementById('acc-github').innerText = currentUser.id; // Using internal ID
         }
 
         async function handleLogout() {
             if (!confirm("Are you sure you want to sign out?")) return;
             await apiFetch('/auth/logout', { method: 'POST' });
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            localStorage.removeItem("user");
             window.location.href = "/index.html";
+
         }
     </script>
 </body>
